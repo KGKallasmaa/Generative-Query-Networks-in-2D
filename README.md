@@ -18,7 +18,7 @@ downloaded `.tfrecord`s to torch `.pt` format and supplied some examples of this
 result in _sodi/_. Also wrote the `driver.py` for some
 interaction with the `data_reader.py` class.
 
-Further exploration would ensue to try out the aforementionted git projects
+Further exploration will ensue to try out the aforementionted git projects
 scripts to run visualisations and representations of the available data.
 
 To get stuff running install `tensorflow==1.15`(!), `pytorch`.
