@@ -2,7 +2,7 @@
 Work in progress
 
 ## Medium article:
-https://medium.com/@karl.gustav1789/hi-2576005cc748
+https://medium.com/computational-neuroscience-students/room-layout-prediction-using-neural-networks-4ae2223daecf
 
 ## Comments
 Alvin 13.11:
