@@ -21,8 +21,10 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 #### edit
 # _NUM_RAW_CAMERA_PARAMS = 5 # This static is POSE_DIM
 # SEQ_DIM = 10 # from the driver.py "dat_inf" output
+# SEQ_DIM = 10 if  "room_ring_data" and 15 if "metzler_5_parts"
 ####
-POSE_DIM, IMG_DIM, SEQ_DIM = 5, 64, 10
+
+POSE_DIM, IMG_DIM, SEQ_DIM = 5, 64, 15
 
 def chunk(iterable, size=10):
     """
@@ -40,7 +42,6 @@ def process(record):
     kwargs = dict(dtype=tf.uint8, back_prop=False)
     for data in tf.python_io.tf_record_iterator(record):
 
-
         feature_map = {
             'frames': tf.FixedLenFeature(
                 shape=SEQ_DIM, # from driver.py run "dat_inf" var.
@@ -49,11 +50,8 @@ def process(record):
                 shape=SEQ_DIM * POSE_DIM,
                 dtype=tf.float32)
         }
+
         instance = tf.parse_single_example(data, feature_map)
-#         instance = tf.parse_single_example(data, {
-#             'frames': tf.FixedLenFeature(shape=SEQ_DIM, dtype=tf.string),
-#             'cameras': tf.FixedLenFeature(shape=SEQ_DIM * POSE_DIM, dtype=tf.float64)
-#         })
 
         # Get data
         images = tf.concat(instance['frames'], axis=0)
