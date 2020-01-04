@@ -25,7 +25,7 @@ scripts to run visualisations and representations of the available data.
 
 To get stuff running install `tensorflow==1.15`(!), `pytorch`.
 
-**02.01:**
+**03.01:**
 
 **Creating the SM model on '5-part' dataset**
 
@@ -45,7 +45,7 @@ The current pipeline of scripts is:
    
    + The `rooms_ring_data` set is 213 TB big, so please don't try to download
      it. For that, mayby use the `cloadload.sh` script in master directory and
-     modify it for only fraction of data... but don't know if it works
+     modify it for only fraction of data... but don't know if it works...
 
    + If converting other datasets (than SM-5part), see the `SEQ_INF` parameter on the
      `tfrecord-converter.py` script and modify it as needed.
@@ -59,6 +59,17 @@ The current pipeline of scripts is:
    Note that:
 
    + Train on the SM-5part set only using 10% of the data. This will hasten
-     stuff :) Apply it using flag `--fraction [int]`.
+     stuff :) Apply it using flag `--fraction [int]`. Results are poor, but at
+     least it will show if things are functioning.
 
-3. ...
+3. When you wake up, take another coffee and look at models fresh from the oven.
+   For this run `mental_rotation.py` in IPython or just run and modify the
+   jupiter notebook. For usage either do a X11 tunnel or just open the folder
+   using _sshfs_ in your computer (and prepare your local pyton enviroment too).
+
+**TODO:**
+
++ devise a way to feed new data, ie the pictures of shapes.
+
++ modifiy the gqn to take in 1D data, hopefully with some simple modifications
+  to some layers and replacing some functions.
