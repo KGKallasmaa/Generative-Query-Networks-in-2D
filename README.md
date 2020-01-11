@@ -4,6 +4,10 @@ Work in progress
 ## Medium article:
 https://medium.com/computational-neuroscience-students/room-layout-prediction-using-neural-networks-4ae2223daecf
 
+**11.01**
+planemaker.py makes images of planes with random circles and rectangles. 
+2Dsplicer.py takes planesmaker output and splits each plane into 4 equal subplanes with coordinates in name file.
+
 ## Comments
 Alvin 
 
