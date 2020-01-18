@@ -37,10 +37,10 @@ def lookatetris(data, tetris_num):
 def save_views(data, tetris_block):
     '''Save views of same tetris block as png files'''
     for tetris_num in range(15):
-        f = './block' + tetris_block + '_view_' + str( tetris_num ) + '.png'
+        f = './block' + str( tetris_block ) + '_view_' + str( tetris_num ) + '.png'
         cv2.imwrite(f, data[tetris_block][0][tetris_num])
 
-def save_tetrises(data, tetris_num):
+def save_tetrises(data):
     '''Save views of all tetris blocks in data as png files'''
     for tetris_block in range(len(data)): # should be 64 blocks
         save_views(data, tetris_block)
@@ -97,3 +97,6 @@ files = dr._get_dataset_files(dat_info,
                                "train",
                                "./our_2d_data/")
 print(files)
+
+# save the tetrispics
+save_tetrises(ptest)
