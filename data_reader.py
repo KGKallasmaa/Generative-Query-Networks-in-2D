@@ -68,6 +68,13 @@ _DATASETS = dict(
         frame_size=64,
         sequence_size=10),
 
+    shepard_metzler_7_parts=DatasetInfo(
+        basepath='shepard_metzler_7_parts',
+        train_size=900,
+        test_size=100,
+        frame_size=64,
+        sequence_size=15),
+ 
     shepard_metzler_5_parts=DatasetInfo(
         basepath='shepard_metzler_5_parts',
         train_size=900,
@@ -75,12 +82,14 @@ _DATASETS = dict(
         frame_size=64,
         sequence_size=15),
 
-    shepard_metzler_7_parts=DatasetInfo(
-        basepath='shepard_metzler_7_parts',
-        train_size=900,
-        test_size=100,
-        frame_size=64,
-        sequence_size=15)
+## edited
+    our_2d_data=DatasetInfo(
+        basepath='our_2d_data',
+        train_size=1,
+        test_size=1,
+        frame_size=300,
+        sequence_size=4)
+##
 )
 _NUM_CHANNELS = 3
 _NUM_RAW_CAMERA_PARAMS = 5
@@ -207,6 +216,23 @@ class DataReader(object):
     context = Context(cameras=context_cameras, frames=context_frames)
     query = Query(context=context, query_camera=query_camera)
     return TaskData(query=query, target=target)
+
+  ### edit
+  def print_read(self, batch_size):
+    '''Reads batch_size (query, target) pairs and prints the progress'''
+    frames, cameras = self._queue.dequeue_many(batch_size)
+    context_frames = frames[:, :-1]
+    print("context_frames:", context_frames, end='\n')
+    context_cameras = cameras[:, :-1]
+    print("context_cameras:", context_cameras, end='\n')
+    target = frames[:, -1]
+    print("target:", target, end='\n')
+    query_camera = cameras[:, -1]
+    print("query_camera:", query_camera, end='\n')
+    context = Context(cameras=context_cameras, frames=context_frames)
+    query = Query(context=context, query_camera=query_camera)
+    return TaskData(query=query, target=target)
+  ###
 
   def _make_read_op(self, reader, filename_queue):
     """Instantiates the ops used to read and parse the data into tensors."""
