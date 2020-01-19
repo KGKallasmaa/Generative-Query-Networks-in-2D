@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import cv2
+import sys
 import torch
 import numpy as np
 import pandas as pd
@@ -17,8 +18,9 @@ def to_coordinates(radius, degrees):
     return [ [ radius * np.cos(degree), radius * np.sin(degree) ] for degree in degrees ]
 
 def color_dispenser(n_colors = 3):
-    '''Generate a grid of random RBG colors, default number of random n_colors = 3'''
-    return ( np.random.rand(n_colors, 3) * 255 ).astype(np.uint8)
+    '''Generate a grid of random RBG colors, default number of random n_colors = 3.
+    Also adds some threshold value so that the shapes are not too close to black'''
+    return ( np.random.rand(n_colors, 3) * 220 + 30 ).astype(np.uint8)
 
 def matter(x, y):
     '''Create a matrix with dimensions.'''
@@ -56,23 +58,25 @@ def generate_3_elem(x_dim, y_dim):
     # pic = get_rect(pic, 0, 0, x_dim, y_dim, color = [255, 255, 255])
     pic = get_rect(pic, *locations[0], color = colors[0])
     pic = get_circled(pic, *locations[1], color = colors[1])
-    return get_triangled(pic, *locations[2], color = colors[2])
+    return get_triangled(pic, *locations[2], color = colors[2]), colors
 
-def get_view(mat, background = [0, 0 ,0], tolerance = 5, spread = 0):
+def get_view(mat, colors, tolerance = 2, spread = 0):
     '''Get the 1D array of the first non-background pixel with certain tolerance.
     Also you can spread the indice x times to create a pseudo-2D view.'''
-    report = np.zeros((max(mat.shape), 3))
+    last = []
+    report = np.zeros((max(mat.shape), 3), dtype = np.uint8)
     for y in range(len(mat)):
         for x in range(len(mat[y])):
-           if not np.allclose(mat[x, y], background, rtol = tolerance):
-               report[y] = mat[x, y]
-               break
+            for col in colors:
+                if np.allclose(mat[x, y], col, atol = tolerance):
+                    report[y] = mat[x, y]
+                    break
     if spread == 0:
         return [ report ]
     else:
         return [ report ] * spread
 
-def view_pointer(mat, yaws = [], background = [0, 0, 0], tolerance = 5, spread = 0):
+def view_pointer(mat, colors, yaws = [], tolerance = 2, spread = 0):
     '''Generate the views from a list of angles and return views in list.
     See further at get_view()'''
     views = []
@@ -81,30 +85,34 @@ def view_pointer(mat, yaws = [], background = [0, 0, 0], tolerance = 5, spread =
         to_degree = yaw
         # rotates the picture and reshape = F holds it in shape.
         views.append(get_view(ndimage.rotate(mat, 60, reshape =False),
-                              background = background,
+                              colors = colors,
                               tolerance = tolerance,
                               spread = spread))
     return views
 
-# pic = generate_3_elem(300, 300)
-# view = get_view(pic, spread = 300)
-# # plt.imshow(view)
-# degrees = np.random.randint(360, size = 15) - 180
-# cameras = view_pointer(pic, yaws = degrees)
+# pic, colors = generate_3_elem(300, 300)
+# view = get_view(pic, colors, spread = 0)
+# plt.imshow(pic)
+# plt.imshow(ndimage.rotate(pic, 60, reshape =False))
+# view_trans = get_view(ndimage.rotate(pic, 60, reshape =False), colors)
+# degrees = np.random.randint(360, size = 1) - 180
+# cameras = view_pointer(pic, colors, yaws = degrees)
+# plt.imshow(cameras[0])
 
-# one idea to solve the dimensionality problem is to project the 1D to square out.
+
 # then look how it behaves in the gqn.
 if __name__ == '__main__':
     # run the code and generate the pt's
     cameras_batch = []
+    print('started processing')
     for batch in range(16):
         print("Batch", batch, "out of 64 started.", end = '\r')
-        pic = generate_3_elem(300, 300)
+        pic, colors = generate_3_elem(300, 300)
         # plt.imshow(pic)
         # generate degrees
         degrees = np.random.randint(360, size = 15) - 180
         # use "spread" to generate pseudo2D pictures
-        cameras = view_pointer(pic, yaws = degrees, spread = 0)
+        cameras = view_pointer(pic, colors = colors, yaws = degrees, spread = 0)
         # convert together some viewpoint coordinates for the 15 views
         viewpoints = np.zeros((15, 5))
         viewpoints[:, 3] = to_radians( degrees )
