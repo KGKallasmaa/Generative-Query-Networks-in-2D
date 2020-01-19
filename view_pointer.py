@@ -84,7 +84,7 @@ def view_pointer(mat, colors, yaws = [], tolerance = 2, spread = 0):
         # calculate the yaw from degree
         to_degree = yaw
         # rotates the picture and reshape = F holds it in shape.
-        views.append(get_view(ndimage.rotate(mat, 60, reshape =False),
+        views.append(get_view(ndimage.rotate(mat, to_degree, reshape =False),
                               colors = colors,
                               tolerance = tolerance,
                               spread = spread))
