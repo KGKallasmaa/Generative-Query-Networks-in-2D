@@ -285,11 +285,14 @@ class DataReader(object):
         raw_pose_params,
         [-1, self._dataset_info.sequence_size, _NUM_RAW_CAMERA_PARAMS])
     raw_pose_params = tf.gather(raw_pose_params, indices, axis=1)
+    print(raw_pose_params)
     pos = raw_pose_params[:, :, 0:3]
     yaw = raw_pose_params[:, :, 3:4]
     pitch = raw_pose_params[:, :, 4:5]
+    print(pos, yaw, pitch)
     cameras = tf.concat(
         [pos, tf.sin(yaw), tf.cos(yaw), tf.sin(pitch), tf.cos(pitch)], axis=2)
+    print(cameras)
     return cameras
 
 
