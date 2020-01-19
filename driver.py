@@ -51,6 +51,10 @@ def to_degrees(mat):
 def to_radians(mat):
     return mat * (np.pi/180)
 
+def coords_to_coords(radius, coords):
+    return np.array([np.cos(coords[:,0]) * radius,
+                       np.sin(coords[:,1]) * radius])
+
 # look at the pt's of metzler 5 parts (from Laura)
 # tetris_block is the nth block looked at different angles
 # tetris_num is the nth viewpoint looked from
@@ -68,6 +72,9 @@ yaws = ptest[0][1][:, 3]
 yaws_degrees = ptest[0][1][:, 3] * (180/np.pi)
 pitch = ptest[0][1][:, 4]
 pitch_degrees = ptest[0][1][:, 4] * (180/np.pi)
+
+locs = ptest[0][1][:, 0:3]
+print(coords_to_coords(32, locs))
 
 ptest = torch.load("./random_testing/train/502-of-900-01.pt")
 print( len(ptest), len(ptest[0]), np.shape( ptest[0][0] ) )

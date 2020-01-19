@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import cv2
+import torch
 import numpy as np
 import pandas as pd
 import scipy.ndimage as ndimage
@@ -11,6 +12,9 @@ def to_degrees(mat):
 def to_radians(mat):
     '''Use this to convert array from degrees to radians'''
     return mat * (np.pi/180)
+
+def to_coordinates(radius, degrees):
+    return [ [ radius * np.cos(degree), radius * np.sin(degree) ] for degree in degrees ]
 
 def color_dispenser(n_colors = 3):
     '''Generate a grid of random RBG colors, default number of random n_colors = 3'''
@@ -54,18 +58,23 @@ def generate_3_elem(x_dim, y_dim):
     pic = get_circled(pic, *locations[1], color = colors[1])
     return get_triangled(pic, *locations[2], color = colors[2])
 
-def get_view(mat, background = [0, 0 ,0], tolerance = 5):
-    '''Get the 1D array of the first non-background pixel with certain tolerance.'''
+def get_view(mat, background = [0, 0 ,0], tolerance = 5, spread = 0):
+    '''Get the 1D array of the first non-background pixel with certain tolerance.
+    Also you can spread the indice x times to create a pseudo-2D view.'''
     report = np.zeros((max(mat.shape), 3))
     for y in range(len(mat)):
         for x in range(len(mat[y])):
            if not np.allclose(mat[x, y], background, rtol = tolerance):
                report[y] = mat[x, y]
                break
-    return report
+    if spread == 0:
+        return [ report ]
+    else:
+        return [ report ] * spread
 
-def view_pointer(mat, yaws = [], background = [0, 0, 0], tolerance = 5):
-    '''Generate the views from a list of angles or yaws and return views in list'''
+def view_pointer(mat, yaws = [], background = [0, 0, 0], tolerance = 5, spread = 0):
+    '''Generate the views from a list of angles and return views in list.
+    See further at get_view()'''
     views = []
     for yaw in yaws:
         # calculate the yaw from degree
@@ -73,22 +82,34 @@ def view_pointer(mat, yaws = [], background = [0, 0, 0], tolerance = 5):
         # rotates the picture and reshape = F holds it in shape.
         views.append(get_view(ndimage.rotate(mat, 60, reshape =False),
                               background = background,
-                              tolerance = tolerance))
+                              tolerance = tolerance,
+                              spread = spread))
     return views
+
+# pic = generate_3_elem(300, 300)
+# view = get_view(pic, spread = 300)
+# # plt.imshow(view)
+# degrees = np.random.randint(360, size = 15) - 180
+# cameras = view_pointer(pic, yaws = degrees)
 
 # one idea to solve the dimensionality problem is to project the 1D to square out.
 # then look how it behaves in the gqn.
 if __name__ == '__main__':
     # run the code and generate the pt's
     cameras_batch = []
-    for batch in range(64):
+    for batch in range(16):
         print("Batch", batch, "out of 64 started.", end = '\r')
         pic = generate_3_elem(300, 300)
         # plt.imshow(pic)
         # generate degrees
         degrees = np.random.randint(360, size = 15) - 180
-        cameras = view_pointer(pic, yaws = degrees)
-        # convert together some viewpoint coordinates
-        viewpoints = [0, 0, 0, to_radians( degrees ), 0]
+        # use "spread" to generate pseudo2D pictures
+        cameras = view_pointer(pic, yaws = degrees, spread = 0)
+        # convert together some viewpoint coordinates for the 15 views
+        viewpoints = np.zeros((15, 5))
+        viewpoints[:, 3] = to_radians( degrees )
+        viewpoints[:, 0:2] = to_coordinates(150, degrees)
+        # mesh them together into context
         context = [cameras, viewpoints]
         cameras_batch.append(context)
+    torch.save(cameras_batch, "train_1d_16block_01.pt")
