@@ -93,23 +93,27 @@ def view_pointer(mat, yaws = [], background = [0, 0, 0], tolerance = 5, spread =
 # cameras = view_pointer(pic, yaws = degrees)
 
 # one idea to solve the dimensionality problem is to project the 1D to square out.
-# then look how it behaves in the gqn.
-if __name__ == '__main__':
-    # run the code and generate the pt's
+# then look ho0w it behaves in the gqn.
+
+def get_cameras_batch():
     cameras_batch = []
     for batch in range(16):
-        print("Batch", batch, "out of 64 started.", end = '\r')
+        print("Batch", batch, "out of 64 started.", end='\r')
         pic = generate_3_elem(300, 300)
-        # plt.imshow(pic)
-        # generate degrees
-        degrees = np.random.randint(360, size = 15) - 180
+        #  plt.imshow(pic)
+        #  generate degrees
+        degrees = np.random.randint(360, size=15) - 180
         # use "spread" to generate pseudo2D pictures
-        cameras = view_pointer(pic, yaws = degrees, spread = 0)
-        # convert together some viewpoint coordinates for the 15 views
+        cameras = view_pointer(pic, yaws=degrees, spread=0)
+        #  convert together some viewpoint coordinates for the 15 views
         viewpoints = np.zeros((15, 5))
-        viewpoints[:, 3] = to_radians( degrees )
+        viewpoints[:, 3] = to_radians(degrees)
         viewpoints[:, 0:2] = to_coordinates(150, degrees)
-        # mesh them together into context
+        #  mesh them together into context
         context = [cameras, viewpoints]
         cameras_batch.append(context)
-    torch.save(cameras_batch, "train_1d_16block_01.pt")
+    return cameras_batch
+
+if __name__ == '__main__':
+    # run the code and generate the pt's
+    torch.save(get_cameras_batch(), "train_1d_16block_01.pt")
