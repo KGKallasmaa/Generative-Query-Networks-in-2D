@@ -10,6 +10,7 @@ import numpy as np
 import torch
 import cv2
 import sys
+import os, gzip
 
 def lookadoodle(orig, mod):
     '''See modified picture and original side-by-side'''
@@ -58,16 +59,20 @@ def coords_to_coords(radius, coords):
 # look at the pt's of metzler 5 parts (from Laura)
 # tetris_block is the nth block looked at different angles
 # tetris_num is the nth viewpoint looked from
-tetris_block = 2
+tetris_block = 0
 tetris_num = 6
+
 ptest = torch.load("./random_testing/train/501-of-900-01.pt")
-print( len(ptest), len(ptest[0]), np.shape( ptest[0][0] ) )
+# ptest = torch.load("./trash_vol2/test/train_2d_64block_10.pt")
+ptest = torch.load("./2d_64block128_01.pt")
+
+print( len(ptest), len(ptest[0]), np.shape( ptest[0][0] ), len(ptest[0][1][0]) )
 # lookatetris(ptest, tetris_num)
 lookadoodles(ptest, tetris_block)
-print("\nimage loc values:", to_degrees( ptest[tetris_block][1][0] ),
-      "\nimage loc values:", to_degrees( ptest[tetris_block][1][1] ),
-      "\nimage loc values:", to_degrees( ptest[tetris_block][1][11] ),
-      "\nimage loc values:", to_degrees( ptest[tetris_block][1][13] ))
+print("\nimage loc values:", ptest[tetris_block][1][0],
+      "\nimage loc values:", ptest[tetris_block][1][1],
+      "\nimage loc values:", ptest[tetris_block][1][11],
+      "\nimage loc values:", ptest[tetris_block][1][13])
 yaws = ptest[0][1][:, 3]
 yaws_degrees = ptest[0][1][:, 3] * (180/np.pi)
 pitch = ptest[0][1][:, 4]
@@ -135,14 +140,17 @@ tf.print(taskdata.query.context.cameras, output_stream=sys.stdout)
 print('our dataset in DataReader:')
 dat = dr.DataReader("our_2d_data",
                  2,
-                "./our_2d_data/",
+                "./trash_vol2/",
                  mode='train')
 
-taskdata = dat.print_read(1)
+taskdata = dat.print_read(16)
 tf.print(taskdata.query.context.cameras, output_stream=sys.stdout)
 
 cameras = dat._preprocess_cameras()
 
+_NUM_CHANNELS = 3
+# this is the camera dimension parameter length modifier - let's keep it at 5 :)
+_NUM_RAW_CAMERA_PARAMS = 5
 print('some file info')
 dat_info = dat._dataset_info
 files = dr._get_dataset_files(dat_info,
@@ -150,5 +158,40 @@ files = dr._get_dataset_files(dat_info,
                                "./our_2d_data/")
 print(files)
 
+file_names = dr._get_dataset_files(dat._dataset_info, 'train', "./trash")
+filename_queue = tf.train.string_input_producer(file_names, seed=99)
+reader = tf.TFRecordReader()
+
+_, raw_data = reader.read_up_to(filename_queue, num_records=16)
+feature_map = {
+    'frames': tf.FixedLenFeature(
+        shape=dat._dataset_info.sequence_size, dtype=tf.string),
+    'cameras': tf.FixedLenFeature(
+        shape=[dat._dataset_info.sequence_size * _NUM_RAW_CAMERA_PARAMS],
+        dtype=tf.float32)
+}
+example = tf.parse_example(raw_data, feature_map)
+raw_pose_params = example['cameras']
+raw_pose_params = tf.reshape(
+    raw_pose_params,
+    [-1, dat._dataset_info.sequence_size, _NUM_RAW_CAMERA_PARAMS])
+pos = raw_pose_params[:, :, 0:3]
+yaw = raw_pose_params[:, :, 3:4]
+pitch = raw_pose_params[:, :, 4:5]
+cameras = tf.concat(
+    [pos, tf.sin(yaw), tf.cos(yaw), tf.sin(pitch), tf.cos(pitch)], axis=2)
+print(pos, yaw, pitch)
+print(cameras)
 # save the tetrispics
-save_tetrises(ptest)
+
+scene_path = "./trash_vol2/test/train_2d_64block_10.pt.gz"
+
+data = torch.load(gzip.open(scene_path, "r"))
+images, viewpoints = list(zip(*data))
+
+images = np.stack(images)
+viewpoints = np.stack(viewpoints)
+
+# uint8 -> float32
+images = images.transpose(0, 1, 4, 2, 3)
+images = torch.FloatTensor(images)/255

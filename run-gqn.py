@@ -51,7 +51,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Create model and optimizer
-    model = GenerativeQueryNetwork(x_dim=3, v_dim=7, r_dim=256, h_dim=128, z_dim=64, L=8).to(device)
+    # play around to get 128x128 working
+    model = GenerativeQueryNetwork(x_dim=3, v_dim=7, r_dim=512, h_dim=128, z_dim=64, L=8).to(device)
     model = nn.DataParallel(model) if args.data_parallel else model
 
     optimizer = torch.optim.Adam(model.parameters(), lr=5 * 10 ** (-5))
