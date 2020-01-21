@@ -20,9 +20,6 @@ NOTE: The minimal parameter change for running different picture sizes you must 
 planemaker.py makes images of planes with random circles and rectangles. 
 2Dsplicer.py takes planesmaker output and splits each plane into 4 equal subplanes with coordinates in name file.
 
-## Comments
-Alvin 
-
 **13.11:**
 
 I took the test data from
