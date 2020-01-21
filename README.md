@@ -2,7 +2,19 @@
 Work in progress
 
 ## Medium article:
-https://medium.com/computational-neuroscience-students/room-layout-prediction-using-neural-networks-4ae2223daecf
+https://medium.com/computational-neuroscience-students/363100f2ca12
+
+**Some notes on this repo:**
+
+1. Use the `view_pointer.py` to generate a dataset. Only parameter it accepts is filename, picture size and shape placement is written in code (should make a argparser...)
+
+2. To run the data generation in parallel use the `runPy_simple.sh` in server. Check that the SBATCH tasks line up with the number of commands given.
+
+3. Then format the data as in `our_data/` into _train_ and _test_ folders and follow the instructions below, beginning from `run_gqn.py` part.
+
+NOTE: The minimal parameter change for running different picture sizes you must change the _r\_dim_ parameter in GenerativeQueryNetwork(), we just used the same multiplier as picture resolution relative to 64x64 (ie 128 = 2\*64 => 256 -> 512).
+
+## Old notes and guidance
 
 **11.01**
 planemaker.py makes images of planes with random circles and rectangles. 
@@ -69,11 +81,4 @@ The current pipeline of scripts is:
 3. When you wake up, take another coffee and look at models fresh from the oven.
    For this run `mental_rotation.py` in IPython or just run and modify the
    jupiter notebook. For usage either do a X11 tunnel or just open the folder
-   using _sshfs_ in your computer (and prepare your local pyton enviroment too).
-
-**TODO:**
-
-+ devise a way to feed new data, ie the pictures of shapes.
-
-+ modifiy the gqn to take in 1D data, hopefully with some simple modifications
-  to some layers and replacing some functions.
+   using _sshfs_ in your computer (and prepare your local python enviroment too).
